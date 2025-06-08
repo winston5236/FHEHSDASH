@@ -1,0 +1,43 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+
+# 發送GET請求
+url = "https://corp.pchome.tw/investor-relations/monthly-sales/"
+response = requests.get(url)
+
+# 解析HTML
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# 找到表格資料
+table = soup.find('table')
+
+# 初始化資料列表
+data = []
+
+# 處理表格資料
+for row in table.find_all('tr')[1:]:
+    cols = row.find_all('td')
+    if len(cols) > 0:
+        month = cols[0].text.strip()
+        revenue = cols[1].text.strip()
+        growth_rate = cols[2].text.strip()
+
+        # 將資料加入列表
+        data.append({
+            "month": month,
+            "revenue": revenue,
+            "growthRate": growth_rate
+        })
+
+# 轉換成JSON格式
+json_data = json.dumps(data, ensure_ascii=False, indent=4)
+
+# 顯示JSON資料
+print(json_data)
+
+# 將JSON資料寫入檔案
+with open('pchome_sales.json', 'w', encoding='utf-8') as f:
+    f.write(json_data)
+
+

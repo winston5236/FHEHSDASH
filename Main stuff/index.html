@@ -1,0 +1,130 @@
+<DOCTYPE html>
+    <head> 
+        <meta carset="UTF-8"><meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title> 芳和空氣品質</title>
+    </head>
+    <style>
+        h1{text-align: center;}
+    * {box-sizing: border-box;}
+    /* Style the header */
+    article{
+      background-color: rgb(105, 132, 113);
+    }
+    header {
+      background-color: rgb(23, 56, 58);
+      padding: 1px;
+      text-align: center;
+      font-size: 20px;
+      color: rgb(223, 230, 231);
+    }
+
+    /* Container for flexboxes */
+    section {
+      display: -webkit-flex;
+      display: flex;
+    }
+
+    /* Style the navigation menu */
+    nav {
+       a {color:#ffffff}
+      -webkit-flex: 1;
+      -ms-flex: 1;
+      flex: 1;
+      background: #317683;
+      padding: 10px;
+    }
+
+    /* Style the content */
+    article {
+      -webkit-flex: 3;
+      -ms-flex: 3;
+      flex: 3;
+      flex-direction: 
+      background-color: #ffffff;
+      padding: 10px;
+    }
+
+    /* Style the footer */
+    footer {
+      background-color: rgb(23, 56, 58);
+      padding: 2px;
+      text-align: center;
+     color: white;
+    }
+    
+     @media (max-width: 200px) {
+       section {
+        -webkit-flex-direction: column;
+        flex-direction: column;
+       }
+    menu {
+      background-color: rgb(98, 148, 151);
+      padding: 2px;
+      text-align: center;
+     color: white;
+    }
+    
+     @media (max-width: 200px) {
+       section {
+        -webkit-flex-direction: column;
+        flex-direction: column;
+       }
+  
+    }
+   .box {
+      text-align: center;
+      font-size: 20px;
+      color: white;
+      padding: 10px; 
+      margin: 10px;
+      height: 10px
+      border: 1px solid #ccc color:ffffff;
+      border-radius: 2px;
+      float: left;
+   }
+   div:nth-child(odd){
+      background-color: #ffffff;
+   }
+    </style>
+    <body>
+      
+        <header>
+          <h1>芳和實中環境資訊</h1>
+        </header>
+        <section>
+         <nav>
+            <p id="demo"></p>
+
+            <script>
+             const d = new Date;
+             document.getElementById("demo").innerHTML = d;
+            </script>
+
+            <hr></hr>
+            <li><a>溫度</h2></li>
+            <li><a>濕度</a></li>
+            <li><a>光照</a></li>
+            <li><a>PM2.5</a></li>
+            <li><a>TVOC</a></li>
+            <li><a>風速</a></li>
+         </nav>
+         
+         <div role=""content" area-label="PM2.5">
+          background-color: #ffffff;
+          <strong>PM2.5</strong>
+        </div>
+        <article>
+         
+        </article>
+        </section>
+        
+        <footer>
+           <p>現在空氣品質適合活動，這邊會顯示跑馬燈，提醒目前環境狀況等資訊</p>
+        </footer>
+        
+        
+    </body>
+
+</html>
+    

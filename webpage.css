@@ -1,0 +1,93 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e6f2f0;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 250px auto;
+    height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar .date-time p {
+    margin: 5px 0;
+}
+
+.sidebar .menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar .menu li {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.sidebar .menu li img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+/* Main Content Styles */
+.main-content {
+    padding: 20px;
+}
+
+.main-content h1 {
+    text-align: center;
+    color: #4CAF50;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.chart {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.chart img {
+    max-width: 100%;
+    height: auto;
+}
+
+.cards {
+    display: flex;
+    gap: 10px;
+}
+
+.card {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.line-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.line-chart img {
+    max-width: 100%;
+    height: auto;
+}
+
+footer {
+    text-align: center;
+}

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link
+       href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+       rel="stylesheet">
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>芳和實驗中學環境現況儀表板</title>
+   <link rel="icon" type="image/x-icon" href="臺北市芳和實驗中學校徽.png">
+   <!-- Include Chart.js -->
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+       /* General Styles */
+       body {
+           min-height: 100vh;
+           display: grid;
+           grid-template-rows: auto 1fr;
+           margin: 0;
+           font-family: poppins, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+           background-color: hsl(109, 14%, 77%);
+           overflow: hidden;
+       }
+
+
+       .dashboard {
+           display: flex;
+           height: 100vh;
+       }
+
+
+       /* Sidebar Styles */
+       .sidebar {
+           height: 100vh;
+           width: 15%;
+           min-width: 100px;
+           background-color: #3b6259;
+           color: white;
+           padding: 5px;
+           display: flex;
+           flex-direction: column;
+           justify-content: flex-start;
+           box-sizing: border-box;
+       }
+
+
+       .sidebar .date-time {
+           background-color: #739384;
+           color: white;
+           padding: 10px;
+           border-radius: 5px;
+           margin-bottom: 20px;
+           display: flex;
+           flex-direction: column;
+           align-items: flex-start;
+           box-sizing: border-box;
+           font-size: 0.8em;
+       }
+
+
+       .sidebar .date-time p {
+           margin: 5px 0;
+       }
+
+
+       .sidebar .menu {
+           list-style-type: none;
+           padding: 0;
+           box-sizing: border-box;
+       }
+
+
+       .sidebar .menu li {
+           margin: 20px 0;
+           box-sizing: border-box;
+       }
+
+
+       .sidebar .menu li button {
+           display: flex;
+           align-items: center;
+           background: none;
+           border: none;
+           color: rgb(0, 0, 0);
+           padding: 5px 15px;
+           cursor: pointer;
+           width: 100%;
+           text-align: left;
+           font-size: 15px;
+           box-sizing: border-box;
+           justify-content: flex-start;
+       }
+
+
+       .sidebar .menu li button img {
+           width: 50px;
+           height: 50px;
+           margin-right: 10px;
+           box-sizing: border-box;
+       }
+
+
+       /* Main Content Styles */
+       .main-content {
+           flex: 1;
+           padding: 20px;
+           display: flex;
+           flex-direction: column;
+           box-sizing: border-box;
+       }
+
+
+       .main-content h1 {
+           text-align: center;
+           color: #000000;
+           font-size: 1.5em;
+           margin-bottom: 20px;
+           box-sizing: border-box;
+       }
+
+
+       /* Main Charts Section */
+       .main-charts {
+           display: flex;
+           height: 70vh;
+           box-sizing: border-box;
+       }
+
+
+       /* Left Area Styles */
+       .left-area {
+           width: 50%;
+           display: flex;
+           flex-direction: column;
+           box-sizing: border-box;
+           padding: 20px;
+       }
+
+
+       /* Big PM2.5 Chart Styles */
+       .big-pm25-chart {
+           background-color: #ffffff;
+           border-radius: 10px;
+           height: 66.66%;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           overflow: hidden;
+           padding: 20px;
+           margin-bottom: 20px;
+           box-sizing: border-box;
+       }
+
+
+       /* PM2.5 Chart Styles */
+       .pm25-chart {
+           background-color: #ffffff;
+           border-radius: 10px;
+           height: 20;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           overflow: hidden;
+           padding: 20px;
+           box-sizing: border-box;
+       }
+
+
+       /* Right Area Styles */
+       .right-area {
+           width: 50%;
+           display: grid;
+           grid-template-columns: repeat(2, 1fr);
+           grid-template-rows: repeat(2, 1fr);
+           gap: 25px;
+           padding: 20px;
+           box-sizing: border-box;
+       }
+
+
+       /* Common Chart Styles */
+       .chart {
+           background-color: #ffffff;
+           border-radius: 10px;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           overflow: hidden;
+           padding: 20px;
+           box-sizing: border-box;
+       }
+
+
+       /* Canvas Style */
+       canvas {
+           max-width: 100%;
+           max-height: 100%;
+       }
+
+
+       /* Modal Styles */
+       .modal {
+           display: none;
+           position: fixed;
+           z-index: 1;
+           left: 0;
+           top: 0;
+           width: 100%;
+           height: 100%;
+           overflow: auto;
+           background-color: rgba(0, 0, 0, 0.4);
+       }
+
+
+       .modal-content {
+           background-color: #fefefe;
+           margin: 15% auto;
+           padding: 20px;
+           border: 1px solid #888;
+           width: 500px;
+           position: relative;
+           border-radius: 10px;
+       }
+
+
+       .close-button {
+           position: absolute;
+           top: 5px;
+           right: 10px;
+           padding: 5px;
+           cursor: pointer;
+           font-size: 20px;
+       }
+
+
+       /* Style for the Canvas in the Modal */
+       #modalChart {
+           max-width: 100%;
+           max-height: 400px;
+       }
+   </style>
+</head>
+
+
+<body>
+   <div class="dashboard">
+       <!-- Sidebar -->
+       <div class="sidebar">
+           <div class="date-time">
+               <p id="current-date"></p>
+               <p id="current-day"></p>
+               <p>Current Time:</p>
+               <p id="current-time"></p>
+           </div>
+           <ul class="menu">
+               <li><button data-chart="bigPm25Chart"><img src="pm2.5logo.webp" alt="PM2.5"> PM2.5</button></li>
+               <li><button data-chart="moistureChart"><img src="moisturelogo.png" alt="Moisture"> 濕度</button></li>
+               <li><button data-chart="windChart"><img src="windlogo.webp" alt="Wind Speed"> 風速</button></li>
+               <li><button data-chart="sunChart"><img src="sunlogo.webp" alt="Sunlight"> 光照</button></li>
+               <li><button data-chart="humidityChart"><img src="templogo.webp" alt="Temperature"> 溫度</button></li>
+             
+           </ul>
+       </div>
+
+
+       <!-- Main Content -->
+       <div class="main-content">
+           <!-- Header -->
+           <h1>芳和實驗中學環境現況</h1>
+
+
+           <!-- Main Charts Section -->
+           <div class="main-charts">
+
+
+               <!-- Left Area -->
+               <div class="left-area">
+                   <div class="big-pm25-chart">
+                       <canvas id="bigPm25Chart"></canvas>
+                   </div>
+                   <div class="pm25-chart">
+                       <canvas id="pm25Chart"></canvas>
+                   </div>
+               </div>
+
+
+               <!-- Right Area -->
+               <div class="right-area">
+                   <div class="chart">
+                       <canvas id="humidityChart"></canvas>
+                   </div>
+                   <div class="chart">
+                       <canvas id="windChart"></canvas>
+                   </div>
+                   <div class="chart">
+                       <canvas id="moistureChart"></canvas>
+                   </div>
+                   <div class="chart">
+                       <canvas id="sunChart"></canvas>
+                   </div>
+               </div>
+
+
+           </div>
+       </div>
+
+
+       <!-- The Modal -->
+       <div id="myModal" class="modal">
+           <!-- Modal content -->
+           <div class="modal-content">
+               <span class="close-button">&times;</span>
+               <canvas id="modalChart"></canvas>
+           </div>
+       </div>
+   </div>
+   <script>
+       function updateDateTime() {
+           const now = new Date();
+           const day = now.getDate();
+           const month = now.getMonth() + 1;
+           const year = now.getFullYear();
+           const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+           const dayOfWeek = days[now.getDay()];
+           let hours = now.getHours();
+           let minutes = now.getMinutes();
+           let seconds = now.getSeconds();
+
+
+           hours = hours < 10 ? '0' + hours : hours;
+           minutes = minutes < 10 ? '0' + minutes : minutes;
+           seconds = seconds < 10 ? '0' + seconds : seconds;
+
+
+           document.getElementById('current-date').textContent = `${month}/${day}/${year}`;
+           document.getElementById('current-day').textContent = `${dayOfWeek}.`;
+           document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+       }
+
+
+       updateDateTime();
+       setInterval(updateDateTime, 1000);
+
+
+       const modal = document.getElementById("myModal");
+       const buttons = document.querySelectorAll('.sidebar .menu li button');
+       const closeButton = document.querySelector(".close-button");
+       const modalChartCanvas = document.getElementById('modalChart');  // Get the modal chart canvas
+
+
+       let modalChart = null;  // Will hold the Chart.js instance for the modal
+
+
+       buttons.forEach(button => {
+           button.addEventListener('click', function () {
+               const chartId = this.dataset.chart;  // Get the chart ID from the button's data-chart attribute
+               showChartInModal(chartId);  // Call function to show chart in modal
+               modal.style.display = "block";  // Show the modal
+           });
+       });
+
+
+       closeButton.addEventListener('click', function () {
+           modal.style.display = "none";
+       });
+
+
+       window.addEventListener('click', function (event) {
+           if (event.target == modal) {
+               modal.style.display = "none";
+           }
+       });
+
+
+       // Chart.js Configuration and Initialization
+       // Simulated JSON data source (replace with your actual data source)
+       const chartData = {
+           bigPm25: {
+               labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+               data: [65, 59, 80, 81, 56, 55],
+               type: 'pie',
+               backgroundColor: 'rgba(75, 192, 192, 0.6)', // Example color
+               borderColor: 'rgba(75, 192, 192, 1)',  // Example color
+               borderWidth: 2,
+           },
+           pm25: {
+               labels: ['A', 'B', 'C', 'D', 'E'],
+               data: [28, 48, 40, 19, 86],
+               type: 'line',
+               borderColor: 'rgba(255, 99, 132, 1)', // Example color
+               borderWidth: 3,
+               tension: 0.4  // For smoother lines
+           },
+           humidity: {
+               labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+               data: [12, 19, 3, 5, 2],
+               type: 'line',
+               backgroundColor: [
+                   'rgba(255, 99, 132, 0.6)',
+                   'rgba(54, 162, 235, 0.6)',
+                   'rgba(255, 206, 86, 0.6)',
+                   'rgba(75, 192, 192, 0.6)',
+                   'rgba(153, 102, 255, 0.6)'
+               ],
+               borderColor: 'rgba(255, 255, 255, 1)',
+               borderWidth: 1,
+           },
+           wind: {
+               labels: ['North', 'South', 'East', 'West'],
+               data: [7, 15, 5, 9],
+               type: 'line',
+               backgroundColor: [
+                   'rgba(255, 99, 132, 0.6)',
+                   'rgba(54, 162, 235, 0.6)',
+                   'rgba(255, 206, 86, 0.6)',
+                   'rgba(75, 192, 192, 0.6)'
+               ],
+               borderColor: 'rgba(255, 255, 255, 1)',
+               borderWidth: 1,
+           },
+           moisture: {
+               labels: ['Soil 1', 'Soil 2', 'Soil 3'],
+               data: [30, 20, 45],
+               type: 'line',
+               backgroundColor: [
+                   'rgba(255, 99, 132, 0.6)',
+                   'rgba(54, 162, 235, 0.6)',
+                   'rgba(255, 206, 86, 0.6)'
+               ],
+               borderColor: 'rgba(255, 255, 255, 1)',
+               borderWidth: 1,
+           },
+           sun: {
+               labels: ['Morning', 'Afternoon', 'Evening'],
+               data: [50, 75, 30],
+               type: 'line',
+               backgroundColor: 'rgba(255, 99, 132, 0.2)',
+               borderColor: 'rgba(255, 99, 132, 1)',
+               pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+               pointBorderColor: '#fff',
+               pointHoverBackgroundColor: '#fff',
+               pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+           }
+       };
+
+
+       function createChart(canvasId, chartType, data, label) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           return new Chart(ctx, {
+               type: chartType,
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: label,
+                       data: data.data,
+                       backgroundColor: data.backgroundColor,
+                       borderColor: data.borderColor,
+                       borderWidth: data.borderWidth,
+                       tension: data.tension,
+                       pointBackgroundColor: data.pointBackgroundColor,
+                       pointBorderColor: data.pointBorderColor,
+                       pointHoverBackgroundColor: data.pointHoverBackgroundColor,
+                       pointHoverBorderColor: data.pointHoverBorderColor,
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true
+                       }
+                   }
+               }
+           });
+       }
+
+
+       // Initialize Charts
+       const bigPm25Chart = createChart('bigPm25Chart', chartData.bigPm25.type, chartData.bigPm25, 'Big PM2.5 Data');
+       const pm25Chart = createChart('pm25Chart', chartData.pm25.type, chartData.pm25, 'PM2.5 Data');
+       const humidityChart = createChart('humidityChart', chartData.humidity.type, chartData.humidity, 'Humidity');
+       const windChart = createChart('windChart', chartData.wind.type, chartData.wind, 'Wind Speed');
+       const moistureChart = createChart('moistureChart', chartData.moisture.type, chartData.moisture, 'Moisture Levels');
+       const sunChart = createChart('sunChart', chartData.sun.type, chartData.sun, 'Sunlight');
+
+
+       // Function to update chart data (simulated live update)
+       function updateChartData() {
+           // Simulate fetching updated data from JSON
+           for (let key in chartData) {
+               chartData[key].data = chartData[key].data.map(value => value + Math.floor(Math.random() * 10) - 5); // Add a random number between -5 and 4
+           }
+
+
+           // Update chart data
+           bigPm25Chart.data.datasets[0].data = chartData.bigPm25.data;
+           pm25Chart.data.datasets[0].data = chartData.pm25.data;
+           humidityChart.data.datasets[0].data = chartData.humidity.data;
+           windChart.data.datasets[0].data = chartData.wind.data;
+           moistureChart.data.datasets[0].data = chartData.moisture.data;
+           sunChart.data.datasets[0].data = chartData.sun.data;
+
+
+           // Call update function for each chart
+           bigPm25Chart.update();
+           pm25Chart.update();
+           humidityChart.update();
+           windChart.update();
+           moistureChart.update();
+           sunChart.update();
+       }
+
+
+       // Update charts every 5 seconds
+       setInterval(updateChartData, 5000);
+
+
+       // Function to show the selected chart in the modal
+       function showChartInModal(chartId) {
+           // Destroy existing chart if it exists
+           if (modalChart) {
+               modalChart.destroy();
+           }
+
+
+           let chartType, data;
+
+
+           switch (chartId) {
+               case 'bigPm25Chart':
+                   chartType = chartData.bigPm25.type;
+                   data = chartData.bigPm25;
+                   break;
+               case 'pm25Chart':
+                   chartType = chartData.pm25.type;
+                   data = chartData.pm25;
+                   break;
+               case 'humidityChart':
+                   chartType = chartData.humidity.type;
+                   data = chartData.humidity;
+                   break;
+               case 'windChart':
+                   chartType = chartData.wind.type;
+                   data = chartData.wind;
+                   break;
+               case 'moistureChart':
+                   chartType = chartData.moisture.type;
+                   data = chartData.moisture;
+                   break;
+               case 'sunChart':
+                   chartType = chartData.sun.type;
+                   data = chartData.sun;
+                   break;
+               default:
+                   console.error('Invalid chart ID:', chartId);
+                   return;
+           }
+
+
+           modalChart = createModalChart('modalChart', chartType, data, chartId);
+       }
+
+
+
+
+       function createModalChart(canvasId, chartType, data, label) {
+           const ctx = document.getElementById(canvasId).getContext('2d');
+           return new Chart(ctx, {
+               type: chartType,
+               data: {
+                   labels: data.labels,
+                   datasets: [{
+                       label: label,
+                       data: data.data,
+                       backgroundColor: data.backgroundColor,
+                       borderColor: data.borderColor,
+                       borderWidth: data.borderWidth,
+                       tension: data.tension,
+                       pointBackgroundColor: data.pointBackgroundColor,
+                       pointBorderColor: data.pointBorderColor,
+                       pointHoverBackgroundColor: data.pointHoverBackgroundColor,
+                       pointHoverBorderColor: data.pointHoverBorderColor,
+                   }]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   scales: {
+                       y: {
+                           beginAtZero: true
+                       }
+                   }
+               }
+           });
+       }
+   </script>
+</body>
+
+
+</html>
+
+
+
