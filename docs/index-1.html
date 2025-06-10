@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>芳和實驗中學環境現況儀表板</title>
+   <link rel="icon" type="image/x-icon" href="images/sidebar/臺北市芳和實驗中學校徽.png">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+       html, body {
+           height: 100%;
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+       }
+       body {
+           min-height: 100vh;
+           display: flex;
+           flex-direction: column;
+           font-family: poppins, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+           background-color: hsl(0, 22%, 81%);
+       }
+       .page-header {
+           background-color: #554a4c;
+           color: white;
+           text-align: center;
+           font-size: 25px;
+           padding: 0px;
+           margin: 0;
+       }
+       .dashboard {
+           display: flex;
+           flex: 1 1 auto;
+           min-height: 0;
+           height: 0;
+       }
+       .sidebar {
+           width: 14vw;
+           min-width: 110px;
+           background-color: #847679;
+           color: white;
+           padding: 5px;
+           display: flex;
+           flex-direction: column;
+           justify-content: flex-start;
+           box-sizing: border-box;
+       }
+       .sidebar .date-time {
+           background-color: #a9989c;
+           color: white;
+           padding: 10px;
+           border-radius: 5px;
+           margin-bottom: 20px;
+           display: flex;
+           flex-direction: column;
+           align-items: flex-start;
+           box-sizing: border-box;
+           font-size: 18px;
+       }
+       .sidebar .date-time p { margin: 5px 0; }
+       .sidebar .menu {
+           list-style-type: none;
+           padding: 0;
+           box-sizing: border-box;
+       }
+       .sidebar .menu li { margin: 15px 0; box-sizing: border-box; }
+       .sidebar .menu li button {
+           display: flex;
+           align-items: center;
+           background: none;
+           border: none;
+           color: rgb(232, 219, 219);
+           padding: 5px 15px;
+           cursor: pointer;
+           width: 100%;
+           text-align: left;
+           font-size: 22px;
+           box-sizing: border-box;
+           justify-content: flex-start;
+           transition: background 0.2s;
+       }
+       .sidebar .menu li button:hover {
+           background-color: #6C5B5B;
+           border-radius: 8px;
+       }
+       .sidebar .menu li button img,
+       .sidebar .menu li button svg {
+           width: 36px;
+           height: 36px;
+           margin-right: 10px;
+           filter: invert(100%);
+           box-sizing: border-box;
+           background: none;
+       }
+       .sidebar .menu li button.electric-btn svg {
+           filter: none !important;
+           stroke: white;
+       }
+       /* Special TVOC icon style to match others (white, transparent bg, no border/shadow) */
+       .sidebar .menu li button.tvoc-btn img {
+           background: none !important;
+           filter: brightness(0) invert(1) !important;
+           border-radius: 0 !important;
+           box-shadow: none !important;
+       }
+       .main-content {
+           flex: 1 1 0;
+           display: flex;
+           flex-direction: column;
+           box-sizing: border-box;
+           min-width: 0;
+           min-height: 0;
+       }
+       .main-charts {
+           display: flex;
+           height: calc(100vh - 80px - 40px);
+           min-height: 0;
+           padding: 0;
+           box-sizing: border-box;
+           width: 100%;
+       }
+       .left-area,
+       .right-area {
+           min-height: 0;
+           height: 100%;
+       }
+       .left-area {
+           display: flex;
+           flex-direction: column;
+           gap: 18px;
+           align-items: stretch;
+           min-width: 320px;
+           max-width: 700px;
+           width: 32vw;
+           height: 100%;
+           box-sizing: border-box;
+           padding: 16px 8px 10px 18px;
+       }
+       .big-pm25-chart {
+           background-color: #ffefef;
+           border-radius: 10px;
+           width: 100%;
+           height: 100%;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           overflow: hidden;
+           box-sizing: border-box;
+           position: relative;
+           min-height: 0;
+           padding: 12px 12px 20px 12px;
+       }
+       .big-pm25-chart .chart-title {
+           margin-left: 0;
+           text-align: center;
+           font-size: 1.15rem;
+           font-weight: 600;
+           color: #554a4c;
+           margin-bottom: 8px;
+           letter-spacing: 1px;
+       }
+       .right-area {
+           width: 68vw;
+           min-width: 320px;
+           display: grid;
+           box-sizing: border-box;
+           padding: 18px 18px 12px 4px;
+           grid-template-columns: 1fr 1fr;
+           grid-template-rows: repeat(3, 1fr);
+           gap: 16px 18px;
+           align-items: stretch;
+           height: 100%;
+           min-height: 0;
+       }
+       .chart {
+           background-color: #ffefef;
+           border-radius: 10px;
+           display: flex;
+           flex-direction: column;
+           justify-content: flex-start;
+           align-items: center;
+           overflow: hidden;
+           padding: 12px 12px 20px 12px;
+           box-sizing: border-box;
+           position: relative;
+           min-height: 0;
+           height: 100%;
+       }
+       .chart > .chart-title {
+           margin-bottom: 3px;
+           margin-left: 0;
+           margin-top: 0;
+           font-size: 1.08rem;
+           text-align: center;
+           width: 100%;
+       }
+       /* Temperature display styling */
+       .temperature-display {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           height: 100%;
+           width: 100%;
+           font-size: 2rem;
+           color: #d3461b;
+           font-weight: bold;
+           letter-spacing: 1.2px;
+           background: none;
+           border: none;
+           user-select: none;
+       }
+       .temperature-unit {
+           font-size: 1.1rem;
+           color: #b96e2c;
+           font-weight: 500;
+           margin-left: 0.2em;
+       }
+       .temperature-value {
+           font-size: 2.3rem;
+           font-weight: 700;
+           color: #d3461b;
+       }
+       .news-ticker-container {
+           background-color: #403636;
+           color: white;
+           min-height: 40px;
+           height: 40px;
+           line-height: 40px;
+           width: 100vw;
+           overflow: hidden;
+           position: relative;
+           flex-shrink: 0;
+           z-index: 10;
+           margin-top: auto;
+       }
+       .news-ticker {
+           font-size: 20px;
+           position: absolute;
+           white-space: nowrap;
+           padding-left: 100%;
+           animation: ticker 15s linear infinite;
+       }
+       @keyframes ticker {
+           0% { transform: translateX(0); }
+           100% { transform: translateX(-100%); }
+       }
+       .modal {
+           display: none;
+           position: fixed;
+           z-index: 100;
+           left: 0;
+           top: 0;
+           width: 100vw;
+           height: 100vh;
+           overflow: auto;
+           background-color: rgba(0, 0, 0, 0.45);
+       }
+       .modal-content {
+           background-color: #fefefe;
+           margin: 2vh auto;
+           padding: 18px 12px 12px 12px;
+           border: 1px solid #888;
+           width: 94vw;
+           max-width: 900px;
+           min-width: 340px;
+           max-height: 95vh;
+           position: relative;
+           border-radius: 18px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+       }
+       .modal-chart-title {
+           font-size: 1rem;
+           font-weight: 600;
+           color: #554a4c;
+           margin-bottom: 6px;
+           margin-top: 2px;
+           text-align: center;
+           letter-spacing: 0.2px;
+           width: 100%;
+       }
+       .modal-chart-span {
+           font-size: 0.82rem;
+           margin-bottom: 6px;
+           color: #444;
+           width: 100%;
+           text-align: center;
+       }
+       .close-button {
+           position: absolute;
+           top: 10px;
+           right: 16px;
+           padding: 5px 12px;
+           cursor: pointer;
+           font-size: 22px;
+           color: #aaa;
+           border: none;
+           background: none;
+           font-weight: bold;
+       }
+       .close-button:hover { color: #ff5555; }
+       #modalChart {
+           width: 760px !important;
+           height: 260px !important;
+           max-width: 90vw;
+           max-height: 320px;
+           min-width: 200px;
+           min-height: 120px;
+           margin-top: 6px;
+           margin-bottom: 0;
+           display: block;
+           background: transparent;
+       }
+       @media (max-width: 900px) {
+         .modal-content { width: 99vw; max-width: 99vw; min-width: 0; padding: 8px 2vw; }
+         #modalChart { width: 98vw !important; }
+         .modal-chart-title { font-size: 0.85rem; }
+         .modal-chart-span { font-size: 0.7rem; }
+       }
+       @media (max-width: 600px) {
+         .modal-content { padding: 6px 0; }
+         #modalChart { width: 99vw !important; }
+       }
+   </style>
+</head>
+<body>
+<header class="page-header">
+  <h1>芳和實驗中學環境現況</h1>
+</header>
+<div class="dashboard">
+  <div class="sidebar">
+    <div class="date-time">
+      <p id="current-date"></p>
+      <p id="current-day"></p>
+      <p>Current Time:</p>
+      <p id="current-time"></p>
+    </div>
+    <ul class="menu">
+      <li><button data-chart="pm25"><img src="images/sidebar/pm2.5logo.webp" alt="PM2.5"> PM2.5</button></li>
+      <li><button data-chart="humidity"><img src="images/sidebar/moisturelogo.png" alt="Humidity"> 濕度</button></li>
+      <li><button data-chart="wind"><img src="images/sidebar/windlogo.webp" alt="Wind Speed"> 風速</button></li>
+      <li><button data-chart="sun"><img src="images/sidebar/sunlogo.webp" alt="Sunlight"> 光照</button></li>
+      <li><button data-chart="temperature"><img src="images/sidebar/templogo.webp" alt="Temperature"> 溫度</button></li>
+      <li>
+        <button data-chart="tvoc" class="tvoc-btn">
+          <!-- Use an SVG for TVOC (white, transparent bg) -->
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <g>
+              <circle cx="18" cy="18" r="16" stroke="white" stroke-width="3" fill="none"/>
+              <ellipse cx="18" cy="18" rx="7" ry="13" stroke="white" stroke-width="3" fill="none"/>
+              <circle cx="18" cy="18" r="3.5" fill="white"/>
+            </g>
+          </svg>
+          有機物
+        </button>
+      </li>
+      <li><button data-chart="co2"><img src="images/sidebar/834431.png" alt="CO2" style="width:36px;height:36px;margin-right:10px;"> 碳排放</button></li>
+    </ul>
+  </div>
+  <div class="main-content">
+    <div class="main-charts">
+      <div class="left-area">
+        <div class="big-pm25-chart">
+          <div class="chart-title">PM2.5</div>
+          <canvas id="bigPm25Chart"></canvas>
+        </div>
+      </div>
+      <div class="right-area">
+        <div class="chart">
+          <div class="chart-title">濕度</div>
+          <div class="temperature-display" id="humidityValueDisplay">
+            <span class="temperature-value" id="humidityValue">--</span>
+            <span class="temperature-unit">%</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-title">風速</div>
+          <div class="temperature-display" id="windValueDisplay">
+            <span class="temperature-value" id="windValue">--</span>
+            <span class="temperature-unit">m/s</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-title">光照</div>
+          <div class="temperature-display" id="sunValueDisplay">
+            <span class="temperature-value" id="sunValue">--</span>
+            <span class="temperature-unit">lux</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-title">溫度</div>
+          <div class="temperature-display" id="temperatureDisplayMain">
+            <span class="temperature-value" id="temperatureValue">--</span>
+            <span class="temperature-unit">°C</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-title">有機物</div>
+          <div class="temperature-display" id="tvocValueDisplay">
+            <span class="temperature-value" id="tvocValue">--</span>
+            <span class="temperature-unit">ppb</span>
+          </div>
+        </div>
+        <div class="chart">
+          <div class="chart-title">碳排放</div>
+          <div class="temperature-display" id="co2ValueDisplay">
+            <span class="temperature-value" id="co2Value">--</span>
+            <span class="temperature-unit">ppm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="news-ticker-container">
+  <div class="news-ticker" id="news-ticker-text">
+    現在空氣品質＿＿，建議＿＿，戶外活動＿＿
+  </div>
+</div>
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <button class="close-button" aria-label="close">&times;</button>
+    <div class="modal-chart-title" id="modal-chart-title"></div>
+    <div class="modal-chart-span" id="modal-chart-span"></div>
+    <canvas id="modalChart"></canvas>
+    <div id="modalValueOnly" class="temperature-display" style="display:none"></div>
+  </div>
+</div>
+<script>
+  function updateDateTime() {
+      const now = new Date();
+      const day = now.getDate();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayOfWeek = days[now.getDay()];
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      let seconds = now.getSeconds();
+      hours = hours < 10 ? '0' + hours : hours;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      document.getElementById('current-date').textContent = `${month}/${day}/${year}`;
+      document.getElementById('current-day').textContent = `${dayOfWeek}.`;
+      document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+
+  function getLassPM25Color(value) {
+      if (value < 30) return 'rgb(58,160,45)';
+      if (value < 70) return 'rgb(255,253,33)';
+      if (value < 500) return 'rgb(250,0,0)';
+      return 'rgb(250,0,250)';
+  }
+  function getAQILevel(value) {
+      if (value < 30) return '良好';
+      if (value < 70) return '普通';
+      if (value < 500) return '不健康';
+      return '危害';
+  }
+  function updateNewsTicker(pm25) {
+      let level = getAQILevel(pm25);
+      let suggestion = '';
+      let activity = '';
+      if (pm25 < 30) {
+          suggestion = '適合外出';
+          activity = '適合戶外活動';
+      } else if (pm25 < 70) {
+          suggestion = '敏感族群避免久留';
+          activity = '一般人可短暫活動';
+      } else {
+          suggestion = '避免外出';
+          activity = '戶外活動不建議';
+      }
+      document.getElementById('news-ticker-text').textContent = `現在空氣品質${level}，建議${suggestion}，${activity}`;
+  }
+
+  // Chart Data and Modal Chart Config
+  let chartData = {
+      pm25Value: 0,
+      pm25History: [],
+      pm25Time: [],
+      humidityHistory: [],
+      humidityTime: [],
+      windHistory: [],
+      windTime: [],
+      temperatureHistory: [],
+      temperatureTime: [],
+      sunHistory: [],
+      sunTime: [],
+      tvocHistory: [],
+      tvocTime: [],
+      co2History: [],
+      co2Time: []
+  };
+
+  // For current value display
+  function updateCurrentValueDisplays() {
+    document.getElementById('humidityValue').textContent = chartData.humidityHistory.length ? Math.round(chartData.humidityHistory.at(-1)*10)/10 : '--';
+    document.getElementById('windValue').textContent = chartData.windHistory.length ? Math.round(chartData.windHistory.at(-1)*10)/10 : '--';
+    document.getElementById('sunValue').textContent = chartData.sunHistory.length ? Math.round(chartData.sunHistory.at(-1)*10)/10 : '--';
+    document.getElementById('tvocValue').textContent = chartData.tvocHistory.length ? Math.round(chartData.tvocHistory.at(-1)*10)/10 : '--';
+    document.getElementById('co2Value').textContent = chartData.co2History.length ? Math.round(chartData.co2History.at(-1)*10)/10 : '--';
+    updateTemperatureDisplay(chartData.temperatureHistory.length ? chartData.temperatureHistory.at(-1) : null);
+  }
+
+  // Gauge chart for PM2.5
+  const gaugeCenterTextPlugin = {
+    id: "gaugeCenterText",
+    afterDraw(chart) {
+      const {ctx} = chart;
+      const value = chart.data.datasets[0].data[0];
+      const unit = "μg/m³";
+      ctx.save();
+      ctx.font = 'bold 1.1rem poppins, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#222';
+      ctx.fillText(Math.round(value), chart.width/2, chart.height/2-8);
+      ctx.font = '0.6rem poppins, sans-serif';
+      ctx.fillStyle = '#444';
+      ctx.fillText(unit, chart.width/2, chart.height/2+13);
+      ctx.restore();
+    }
+  };
+
+  function createPm25GaugeChart(ctx, value) {
+      return new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+              labels: ['PM2.5', '剩餘'],
+              datasets: [{
+                  data: [Math.min(value, 500), 500 - Math.min(value, 500)],
+                  backgroundColor: [getLassPM25Color(value), '#e0e0e0'],
+                  borderWidth: 0
+              }]
+          },
+          options: {
+              rotation: 0,
+              circumference: 2 * Math.PI,
+              cutout: '70%',
+              plugins: {
+                  legend: { display: false },
+                  tooltip: { enabled: false }
+              }
+          },
+          plugins: [gaugeCenterTextPlugin]
+      });
+  }
+
+  // For chart modal: line chart with time/date labels and span
+  function createTimeChartForModal(ctx, label, data, timeArr, color) {
+    if (!data || !data.length) data = [0];
+    if (!timeArr || !timeArr.length) timeArr = [''];
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: timeArr,
+            datasets: [{
+                label: label,
+                data: data,
+                backgroundColor: color,
+                borderColor: color,
+                borderWidth: 1.2,
+                tension: 0.33,
+                pointRadius: 2.2,
+                pointHoverRadius: 4
+            }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return `${context.parsed.y} (${context.label})`;
+                    }
+                  }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: false },
+                    ticks: { font: { size: 10 } }
+                },
+                x: {
+                    title: { display: false },
+                    ticks: {
+                        font: { size: 8 },
+                        autoSkip: true,
+                        maxTicksLimit: 14,
+                        maxRotation: 30,
+                        minRotation: 12
+                    }
+                }
+            }
+        }
+    });
+  }
+
+  // Modal chart config
+  let modalChart = null;
+  function openModalWithChart(chartKey) {
+    const modal = document.getElementById('myModal');
+    const modalCanvas = document.getElementById('modalChart');
+    const modalTitle = document.getElementById('modal-chart-title');
+    const modalSpan = document.getElementById('modal-chart-span');
+    const modalValueOnly = document.getElementById('modalValueOnly');
+    if (modalChart) { try { modalChart.destroy(); } catch {} }
+    modal.style.display = "block";
+    modalCanvas.style.display = '';
+    modalValueOnly.style.display = 'none';
+    let title = "";
+    let spanText = "";
+
+    if (chartKey === "pm25") {
+      title = "PM2.5 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "PM2.5 (μg/m³)",
+        chartData.pm25History,
+        chartData.pm25Time,
+        'rgba(255,99,132,0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.pm25Time);
+    } else if (chartKey === "humidity") {
+      title = "濕度 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "濕度 (%)",
+        chartData.humidityHistory,
+        chartData.humidityTime,
+        'rgba(54,162,235,0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.humidityTime);
+    } else if (chartKey === "wind") {
+      title = "風速 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "風速 (m/s)",
+        chartData.windHistory,
+        chartData.windTime,
+        'rgba(75,192,192,0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.windTime);
+    } else if (chartKey === "sun") {
+      title = "光照 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "光照 (lux)",
+        chartData.sunHistory,
+        chartData.sunTime,
+        'rgba(255,159,64,0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.sunTime);
+    } else if (chartKey === "temperature") {
+      title = "溫度 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "溫度 (°C)",
+        chartData.temperatureHistory,
+        chartData.temperatureTime,
+        'rgba(211,70,27,0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.temperatureTime);
+    } else if (chartKey === "tvoc") {
+      title = "有機物 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "有機物 (ppb)",
+        chartData.tvocHistory,
+        chartData.tvocTime,
+        'rgba(115, 74, 203, 0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.tvocTime);
+    } else if (chartKey === "co2") {
+      title = "碳排放 過去數據";
+      modalChart = createTimeChartForModal(
+        modalCanvas.getContext('2d'),
+        "碳排放 (ppm)",
+        chartData.co2History,
+        chartData.co2Time,
+        'rgba(44, 156, 210, 0.7)'
+      );
+      spanText = getModalSpanLabel(chartData.co2Time);
+    }
+    modalTitle.textContent = title;
+    modalSpan.textContent = spanText;
+  }
+
+  function getModalSpanLabel(times) {
+    if (!times || times.length < 2) return "";
+    return `資料時間範圍：${times[0]} ~ ${times.at(-1)}（共${times.length}筆）`;
+  }
+
+  document.querySelectorAll('.sidebar .menu li button').forEach(button => {
+    button.addEventListener('click', function () {
+      openModalWithChart(this.dataset.chart);
+    });
+  });
+  document.querySelector('.close-button').onclick = function () {
+    document.getElementById('myModal').style.display = "none";
+    if (modalChart) { try { modalChart.destroy(); } catch {} }
+  };
+  window.onclick = function (event) {
+    if (event.target == document.getElementById('myModal')) {
+      document.getElementById('myModal').style.display = "none";
+      if (modalChart) { try { modalChart.destroy(); } catch {} }
+    }
+  };
+
+  // Temperature display
+  let lastTemperature = null;
+  function updateTemperatureDisplay(temp) {
+    lastTemperature = temp;
+    document.getElementById('temperatureValue').textContent = (temp !== null && !isNaN(temp)) ? Math.round(temp * 10) / 10 : "--";
+  }
+
+  // Get value by keys (fallback for random data)
+  const lassKeys = {
+      pm25: ["s_d0","pm25","PM2_5","PM25_AVG","PM25"],
+      temperature: ["s_t0", "s_t1", "s_t2", "s_t3", "s_t4", "Temperature", "temperature","temp","temp_AVG"],
+      humidity: ["s_h0", "s_h1", "s_h2", "s_h3", "s_h4", "s_h5", "s_h6", "Humidity", "humidity","humid","humid_AVG"],
+      tvoc: ["tvoc", "TVOC", "s_tvoc"],
+      co2: ["co2", "CO2", "s_co2"]
+  };
+  function getLassValue(feed, keys, fallback) {
+    for (const key of keys) {
+      if (feed[key] !== undefined && !isNaN(feed[key])) {
+        return parseFloat(feed[key]);
+      }
+    }
+    return fallback;
+  }
+
+  // Canvas resize
+  function resizeBigPm25ChartCanvas() {
+    const container = document.querySelector('.big-pm25-chart');
+    const canvas = document.getElementById('bigPm25Chart');
+    const size = Math.min(container.offsetWidth, container.offsetHeight * 0.95);
+    canvas.width = size;
+    canvas.height = size;
+  }
+
+  let bigPm25Chart;
+  function redrawBigPm25Gauge(value) {
+    resizeBigPm25ChartCanvas();
+    if (bigPm25Chart) bigPm25Chart.destroy();
+    bigPm25Chart = createPm25GaugeChart(document.getElementById('bigPm25Chart').getContext('2d'), value);
+  }
+
+  // On load, initialize
+  window.addEventListener('DOMContentLoaded', function () {
+      resizeBigPm25ChartCanvas();
+      window.addEventListener('resize', () => {
+          resizeBigPm25ChartCanvas();
+          redrawBigPm25Gauge(chartData.pm25Value);
+      });
+      redrawBigPm25Gauge(0);
+      fetchAndUpdateLASS();
+      setInterval(fetchAndUpdateLASS, 5000);
+  });
+
+  // Fetch and update LASS API
+  const LASS_API = 'https://pm25.lass-net.org/data/last.php?device_id=B827EB63D1C8';
+  async function fetchAndUpdateLASS() {
+    try {
+      const resp = await fetch(LASS_API);
+      const json = await resp.json();
+      const feeds = json.feeds && json.feeds[0];
+      if (!feeds) return;
+      const feed = feeds[Object.keys(feeds)[0]];
+      if (!feed) return;
+      const now = new Date();
+      const nowStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,0)}/${now.getDate().toString().padStart(2,0)} ${now.getHours().toString().padStart(2,0)}:${now.getMinutes().toString().padStart(2,0)}:${now.getSeconds().toString().padStart(2,0)}`;
+
+      let pm25 = getLassValue(feed, lassKeys.pm25, 0);
+      let temperature = getLassValue(feed, lassKeys.temperature, 0);
+      let humidity = getLassValue(feed, lassKeys.humidity, 0);
+      let wind = (feed["s_w"] !== undefined && !isNaN(feed["s_w"])) ? parseFloat(feed["s_w"]) : (Math.random()*5 + 1);
+      let sun = (feed["s_l"] !== undefined && !isNaN(feed["s_l"])) ? parseFloat(feed["s_l"]) : (Math.random()*1000 + 100);
+      let tvoc = getLassValue(feed, lassKeys.tvoc, Math.random() * 200 + 100);
+      let co2 = getLassValue(feed, lassKeys.co2, Math.random() * 500 + 400);
+
+      chartData.pm25Value = pm25;
+      chartData.pm25History.push(pm25);   chartData.pm25Time.push(nowStr);
+      if (chartData.pm25History.length > 20) { chartData.pm25History.shift(); chartData.pm25Time.shift(); }
+      chartData.temperatureHistory.push(temperature); chartData.temperatureTime.push(nowStr);
+      if (chartData.temperatureHistory.length > 20) { chartData.temperatureHistory.shift(); chartData.temperatureTime.shift(); }
+      chartData.humidityHistory.push(humidity); chartData.humidityTime.push(nowStr);
+      if (chartData.humidityHistory.length > 20) { chartData.humidityHistory.shift(); chartData.humidityTime.shift(); }
+      chartData.windHistory.push(wind); chartData.windTime.push(nowStr);
+      if (chartData.windHistory.length > 20) { chartData.windHistory.shift(); chartData.windTime.shift(); }
+      chartData.sunHistory.push(sun); chartData.sunTime.push(nowStr);
+      if (chartData.sunHistory.length > 20) { chartData.sunHistory.shift(); chartData.sunTime.shift(); }
+      chartData.tvocHistory.push(tvoc); chartData.tvocTime.push(nowStr);
+      if (chartData.tvocHistory.length > 20) { chartData.tvocHistory.shift(); chartData.tvocTime.shift(); }
+      chartData.co2History.push(co2); chartData.co2Time.push(nowStr);
+      if (chartData.co2History.length > 20) { chartData.co2History.shift(); chartData.co2Time.shift(); }
+
+      redrawBigPm25Gauge(pm25);
+      updateCurrentValueDisplays();
+      updateNewsTicker(pm25);
+    } catch (e) {
+      console.error("LASS fetch error", e);
+    }
+  }
+</script>
+</body>
+</html>
