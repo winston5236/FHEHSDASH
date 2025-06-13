@@ -7,7 +7,7 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>芳和實驗中學環境現況儀表板</title>
-   <link rel="icon" type="image/x-icon" href="臺北市芳和實驗中學校徽.png">
+   <link rel="icon" type="image/x-icon" href="images/sidebar/臺北市芳和實驗中學校徽.png">
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
    <style>
        html, body {
@@ -99,7 +99,6 @@
            filter: none !important;
            stroke: white;
        }
-       /* Special TVOC icon style to match others (white, transparent bg, no border/shadow) */
        .sidebar .menu li button.tvoc-btn img {
            background: none !important;
            filter: brightness(0) invert(1) !important;
@@ -198,7 +197,6 @@
            text-align: center;
            width: 100%;
        }
-       /* Temperature display styling */
        .temperature-display {
            display: flex;
            flex-direction: column;
@@ -342,25 +340,23 @@
       <p id="current-time"></p>
     </div>
     <ul class="menu">
-      <li><button data-chart="pm25"><img src="pm2.5logo.webp" alt="PM2.5"> PM2.5</button></li>
-      <li><button data-chart="humidity"><img src="moisturelogo.png" alt="Humidity"> 濕度</button></li>
-      <li><button data-chart="wind"><img src="windlogo.webp" alt="Wind Speed"> 風速</button></li>
-      <li><button data-chart="sun"><img src="sunlogo.webp" alt="Sunlight"> 光照</button></li>
-      <li><button data-chart="temperature"><img src="templogo.webp" alt="Temperature"> 溫度</button></li>
+      <li><button data-chart="pm25"><img src="images/sidebar/pm2.5logo.webp" alt="PM2.5"> PM2.5</button></li>
+      <li><button data-chart="humidity"><img src="images/sidebar/moisturelogo.png" alt="Humidity"> 濕度</button></li>
+      <li><button data-chart="wind"><img src="images/sidebar/windlogo.webp" alt="Wind Speed"> 風速</button></li>
+      <li><button data-chart="sun"><img src="images/sidebar/sunlogo.webp" alt="Sunlight"> 光照</button></li>
+      <li><button data-chart="temperature"><img src="images/sidebar/templogo.webp" alt="Temperature"> 溫度</button></li>
       <li>
         <button data-chart="tvoc" class="tvoc-btn">
-          <!-- Use an SVG for TVOC (white, transparent bg) -->
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-            <g>
-              <circle cx="18" cy="18" r="16" stroke="white" stroke-width="3" fill="none"/>
-              <ellipse cx="18" cy="18" rx="7" ry="13" stroke="white" stroke-width="3" fill="none"/>
-              <circle cx="18" cy="18" r="3.5" fill="white"/>
-            </g>
-          </svg>
+          <img src="images/sidebar/tvoclogo.png" alt="TVOC" style="filter:brightness(0) invert(1); width:36px; height:36px; margin-right:10px;">
           有機物
         </button>
       </li>
-      <li><button data-chart="co2"><img src="834431.png" alt="CO2" style="width:36px;height:36px;margin-right:10px;"> 碳排放</button></li>
+      <li>
+        <button data-chart="co2">
+          <img src="images/sidebar/834431.png" alt="CO2" style="width:36px;height:36px;margin-right:10px;">
+          碳濃度
+        </button>
+      </li>
     </ul>
   </div>
   <div class="main-content">
@@ -408,7 +404,7 @@
           </div>
         </div>
         <div class="chart">
-          <div class="chart-title">碳排放</div>
+          <div class="chart-title">碳濃度</div>
           <div class="temperature-display" id="co2ValueDisplay">
             <span class="temperature-value" id="co2Value">--</span>
             <span class="temperature-unit">ppm</span>
@@ -433,6 +429,7 @@
   </div>
 </div>
 <script>
+  // JavaScript code unchanged except "碳排放" -> "碳濃度" for titles
   function updateDateTime() {
       const now = new Date();
       const day = now.getDate();
@@ -482,7 +479,6 @@
       document.getElementById('news-ticker-text').textContent = `現在空氣品質${level}，建議${suggestion}，${activity}`;
   }
 
-  // Chart Data and Modal Chart Config
   let chartData = {
       pm25Value: 0,
       pm25History: [],
@@ -501,7 +497,6 @@
       co2Time: []
   };
 
-  // For current value display
   function updateCurrentValueDisplays() {
     document.getElementById('humidityValue').textContent = chartData.humidityHistory.length ? Math.round(chartData.humidityHistory.at(-1)*10)/10 : '--';
     document.getElementById('windValue').textContent = chartData.windHistory.length ? Math.round(chartData.windHistory.at(-1)*10)/10 : '--';
@@ -511,7 +506,6 @@
     updateTemperatureDisplay(chartData.temperatureHistory.length ? chartData.temperatureHistory.at(-1) : null);
   }
 
-  // Gauge chart for PM2.5
   const gaugeCenterTextPlugin = {
     id: "gaugeCenterText",
     afterDraw(chart) {
@@ -555,7 +549,6 @@
       });
   }
 
-  // For chart modal: line chart with time/date labels and span
   function createTimeChartForModal(ctx, label, data, timeArr, color) {
     if (!data || !data.length) data = [0];
     if (!timeArr || !timeArr.length) timeArr = [''];
@@ -608,7 +601,6 @@
     });
   }
 
-  // Modal chart config
   let modalChart = null;
   function openModalWithChart(chartKey) {
     const modal = document.getElementById('myModal');
@@ -684,10 +676,10 @@
       );
       spanText = getModalSpanLabel(chartData.tvocTime);
     } else if (chartKey === "co2") {
-      title = "碳排放 過去數據";
+      title = "碳濃度 過去數據";
       modalChart = createTimeChartForModal(
         modalCanvas.getContext('2d'),
-        "碳排放 (ppm)",
+        "碳濃度 (ppm)",
         chartData.co2History,
         chartData.co2Time,
         'rgba(44, 156, 210, 0.7)'
@@ -719,14 +711,12 @@
     }
   };
 
-  // Temperature display
   let lastTemperature = null;
   function updateTemperatureDisplay(temp) {
     lastTemperature = temp;
     document.getElementById('temperatureValue').textContent = (temp !== null && !isNaN(temp)) ? Math.round(temp * 10) / 10 : "--";
   }
 
-  // Get value by keys (fallback for random data)
   const lassKeys = {
       pm25: ["s_d0","pm25","PM2_5","PM25_AVG","PM25"],
       temperature: ["s_t0", "s_t1", "s_t2", "s_t3", "s_t4", "Temperature", "temperature","temp","temp_AVG"],
@@ -743,7 +733,6 @@
     return fallback;
   }
 
-  // Canvas resize
   function resizeBigPm25ChartCanvas() {
     const container = document.querySelector('.big-pm25-chart');
     const canvas = document.getElementById('bigPm25Chart');
@@ -759,7 +748,6 @@
     bigPm25Chart = createPm25GaugeChart(document.getElementById('bigPm25Chart').getContext('2d'), value);
   }
 
-  // On load, initialize
   window.addEventListener('DOMContentLoaded', function () {
       resizeBigPm25ChartCanvas();
       window.addEventListener('resize', () => {
@@ -771,7 +759,6 @@
       setInterval(fetchAndUpdateLASS, 5000);
   });
 
-  // Fetch and update LASS API
   const LASS_API = 'https://pm25.lass-net.org/data/last.php?device_id=B827EB63D1C8';
   async function fetchAndUpdateLASS() {
     try {
@@ -815,6 +802,14 @@
       console.error("LASS fetch error", e);
     }
   }
+</script>
+<!-- Example Java code for demonstration -->
+<script type="text/java">
+public class CarbonConcentrationDemo {
+    public static void main(String[] args) {
+        System.out.println("碳濃度 (CO2 concentration) monitoring system initialized.");
+    }
+}
 </script>
 </body>
 </html>
